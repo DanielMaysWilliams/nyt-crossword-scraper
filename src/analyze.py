@@ -32,7 +32,7 @@ def main(puzzle_date: datetime.date):
     sentiment_analyzer = pipeline(
         "text-classification",
         model="cardiffnlp/twitter-roberta-base-sentiment-latest",
-        device=0,
+        # device=0,  # On a device with a GPU (e.g., not in GitHub Actions) uncomment this line
     )
 
     for i, comment in enumerate(comments):
