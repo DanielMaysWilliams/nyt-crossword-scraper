@@ -3,7 +3,7 @@ name = "nyt-crossword-scraper"
 version = "0.1.0"
 description = "Scrape, analyze, and upload NY Times crossword comments"
 readme = "README.md"
-requires-python = ">=3.12"
+requires-python = ">=3.12,<3.13"
 dependencies = [
     "duckdb>=1.1.2",
     "python-dotenv>=1.0.1",
