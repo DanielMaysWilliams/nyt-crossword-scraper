@@ -129,7 +129,7 @@ class PuzzleCommentScraper:
             comment_replies.extend(comment.pop("replies"))
             for comment_reply in comment_replies:
                 comment_reply.pop("replies")
-                comment_reply["puzzleDate"] = puzzle_date
+                comment_reply["puzzleDate"] = self.puzzle_date
             self.replies.extend(comment_replies)
 
         return self.replies
