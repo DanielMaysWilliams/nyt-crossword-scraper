@@ -36,6 +36,12 @@ def main(puzzle_date: datetime.date):
     )
     """)
 
+    # Convert from JSON array to Newline Delimited JSON
+    con.sql(f"""
+    COPY (from 'comments/comments-{puzzle_date:%Y-%m-%d}.json') 
+    TO 'comments/comments-{puzzle_date:%Y-%m-%d}.json'
+    """)
+
     con.sql(f"""
     COPY (from 'comments/comments-{puzzle_date:%Y-%m-%d}.json') 
     TO 's3://nyt-comments/comments-{puzzle_date:%Y-%m-%d}.parquet'
