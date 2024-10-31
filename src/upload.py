@@ -43,7 +43,9 @@ def main(puzzle_date: datetime.date):
     """)
 
     # append to nyt_comments table in motherduck
-    con.sql(f"INSERT INTO nyt_comments SELECT * FROM 'comments/comments-{puzzle_date:%Y-%m-%d}.json'")
+    con.sql(
+        f"INSERT OR REPLACE INTO nyt_comments BY NAME (SELECT * FROM 'comments/comments-{puzzle_date:%Y-%m-%d}.json')"
+    )
 
     con.sql(f"""
     COPY (from 'comments/comments-{puzzle_date:%Y-%m-%d}.json') 
