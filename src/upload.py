@@ -25,7 +25,7 @@ def valid_date(s: str) -> datetime.datetime:
 
 def main(puzzle_date: datetime.date):
     logger.info(f"Beginning uploading comments from date {puzzle_date}")
-    con = duckdb.connect()
+    con = duckdb.connect("md:")
     con.sql(f"""
     CREATE OR REPLACE SECRET (
         TYPE S3, 
@@ -41,6 +41,9 @@ def main(puzzle_date: datetime.date):
     COPY (from 'comments/comments-{puzzle_date:%Y-%m-%d}.json') 
     TO 'comments/comments-{puzzle_date:%Y-%m-%d}.json'
     """)
+
+    # append to nyt_comments table in motherduck
+    con.sql(f"INSERT INTO nyt_comments SELECT * FROM 'comments/comments-{puzzle_date:%Y-%m-%d}.json'")
 
     con.sql(f"""
     COPY (from 'comments/comments-{puzzle_date:%Y-%m-%d}.json') 
