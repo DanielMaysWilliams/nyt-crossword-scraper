@@ -36,7 +36,7 @@ def main(puzzle_date: datetime.date):
     )
 
     for i, comment in enumerate(comments):
-        logger.info(f"Analyzing comment {comment["commentID"]}")
+        logger.info(f"Analyzing comment {comment['commentID']}")
         analyzer: Any = sentiment_analyzer(
             comment["commentBody"],
             truncation=True,
