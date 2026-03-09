@@ -64,7 +64,7 @@ class PuzzleCommentScraper:
         self.replies: list[dict[str, Any]] = []
 
     def get_all_parent_comments(self) -> list[dict[str, Any]]:
-        logger.info(f"Beginning scraping parent comments {self.params["url"]}")
+        logger.info(f"Beginning scraping parent comments {self.params['url']}")
         request_count = 0
 
         # do first request
@@ -105,11 +105,11 @@ class PuzzleCommentScraper:
         return self.comments
 
     def pop_and_get_all_replies(self):
-        logger.info(f"Beginning scraping replies {self.params["url"]}")
+        logger.info(f"Beginning scraping replies {self.params['url']}")
         for comment in self.comments:
             comment_replies = []
             if len(comment["replies"]) < comment["replyCount"]:
-                logger.info(f"Getting more replies for commentID={comment["commentID"]}")
+                logger.info(f"Getting more replies for commentID={comment['commentID']}")
                 time.sleep(0.5 + random.random())
                 comment_params = {
                     "url": self.params["url"],
@@ -142,7 +142,7 @@ class PuzzleCommentScraper:
 def main(puzzle_date: datetime.date, max_requests: int = 10):
     scraper = PuzzleCommentScraper(puzzle_date, max_requests)
 
-    logger.info(f"Initialized scraper for URL {scraper.params["url"]}")
+    logger.info(f"Initialized scraper for URL {scraper.params['url']}")
 
     try:
         scraper.get_all_parent_comments()

@@ -25,33 +25,55 @@ def valid_date(s: str) -> datetime.datetime:
 
 def main(puzzle_date: datetime.date):
     logger.info(f"Beginning uploading comments from date {puzzle_date}")
-    con = duckdb.connect("md:")
+    con = duckdb.connect()
+
+    # Convert from JSON array to Newline Delimited JSON
+    con.sql(f"""
+    COPY (from 'comments/comments-{puzzle_date:%Y-%m-%d}.json')
+    TO 'comments/comments-{puzzle_date:%Y-%m-%d}.json'
+    """)
+
+    upload_to_motherduck(con, puzzle_date)
+    upload_to_s3(con, puzzle_date)
+    upload_to_postgres(con, puzzle_date)
+
+    logger.info(f"Finished uploading comments from date {puzzle_date}")
+
+
+def upload_to_motherduck(con: duckdb.DuckDBPyConnection, puzzle_date: datetime.date):
+    logger.info(f"Beginning uploading to MotherDuck for date {puzzle_date}")
+    con.sql("ATTACH 'md:'")
+    con.sql(
+        f"INSERT OR REPLACE INTO nyt_comments BY NAME (SELECT * FROM 'comments/comments-{puzzle_date:%Y-%m-%d}.json')"
+    )
+    logger.info(f"Finished uploading to MotherDuck for date {puzzle_date}")
+
+
+def upload_to_s3(con: duckdb.DuckDBPyConnection, puzzle_date: datetime.date):
+    logger.info(f"Beginning uploading to S3 for date {puzzle_date}")
     con.sql(f"""
     CREATE OR REPLACE SECRET (
-        TYPE S3, 
-        KEY_ID '{os.getenv("AWS_ACCESS_KEY_ID")}', 
-        SECRET '{os.getenv("AWS_SECRET_ACCESS_KEY")}', 
+        TYPE S3,
+        KEY_ID '{os.getenv("AWS_ACCESS_KEY_ID")}',
+        SECRET '{os.getenv("AWS_SECRET_ACCESS_KEY")}',
         ENDPOINT '{os.getenv("ENDPOINT_URL")}',
         REGION 'auto'
     )
     """)
-
-    # Convert from JSON array to Newline Delimited JSON
     con.sql(f"""
-    COPY (from 'comments/comments-{puzzle_date:%Y-%m-%d}.json') 
-    TO 'comments/comments-{puzzle_date:%Y-%m-%d}.json'
-    """)
-
-    # append to nyt_comments table in motherduck
-    con.sql(
-        f"INSERT OR REPLACE INTO nyt_comments BY NAME (SELECT * FROM 'comments/comments-{puzzle_date:%Y-%m-%d}.json')"
-    )
-
-    con.sql(f"""
-    COPY (from 'comments/comments-{puzzle_date:%Y-%m-%d}.json') 
+    COPY (from 'comments/comments-{puzzle_date:%Y-%m-%d}.json')
     TO 's3://nyt-comments/comments-{puzzle_date:%Y-%m-%d}.parquet'
     """)
-    logger.info(f"Finished uploading comments from date {puzzle_date}")
+    logger.info(f"Finished uploading to S3 for date {puzzle_date}")
+
+
+def upload_to_postgres(con: duckdb.DuckDBPyConnection, puzzle_date: datetime.date):
+    logger.info(f"Beginning uploading to PostgreSQL for date {puzzle_date}")
+    con.sql("INSTALL postgres; LOAD postgres;")
+    con.sql(f"ATTACH '{os.getenv('DATABASE_URL')}' AS pg (TYPE POSTGRES)")
+    con.sql(f"DELETE FROM pg.nyt_comments WHERE puzzledate = '{puzzle_date:%Y-%m-%d}'")
+    con.sql(f"INSERT INTO pg.nyt_comments BY NAME SELECT * FROM 'comments/comments-{puzzle_date:%Y-%m-%d}.json'")
+    logger.info(f"Finished uploading to PostgreSQL for date {puzzle_date}")
 
 
 if __name__ == "__main__":
