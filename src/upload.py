@@ -44,7 +44,7 @@ def upload_to_motherduck(con: duckdb.DuckDBPyConnection, puzzle_date: datetime.d
     logger.info(f"Beginning uploading to MotherDuck for date {puzzle_date}")
     con.sql("ATTACH 'md:'")
     con.sql(
-        f"INSERT OR REPLACE INTO nyt_comments BY NAME (SELECT * FROM 'comments/comments-{puzzle_date:%Y-%m-%d}.json')"
+        f"INSERT OR REPLACE INTO my_db.nyt_comments BY NAME (SELECT * FROM 'comments/comments-{puzzle_date:%Y-%m-%d}.json')"
     )
     logger.info(f"Finished uploading to MotherDuck for date {puzzle_date}")
 
